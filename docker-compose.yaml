@@ -38,7 +38,7 @@ services:
       # Enable traefik
       - "traefik.enable=true"
       # Router for Matomo application, only available over HTTPS
-      - "traefik.http.routers.matomo-secure.rule=Host(`your.domain`)"
+      - "traefik.http.routers.matomo-secure.rule=Host(`your.matomo.domain`)"
       - "traefik.http.routers.matomo-secure.tls=true"
       - "traefik.http.routers.matomo-secure.middlewares=remove-xpowered"
       - "traefik.http.routers.matomo-secure.tls.certresolver=http"
