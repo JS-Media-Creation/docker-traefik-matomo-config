@@ -1,0 +1,51 @@
+version: '3'
+
+volumes:
+  matomo:
+  db:
+
+services:
+  db:
+    networks:
+      - database
+    image: mariadb
+    container_name: mariadb-matomo
+    restart: always
+    command: --max-allowed-packet=64MB
+    volumes:
+      - db:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=your-mysql-root-password
+      - MYSQL_DATABASE=matomo
+      - MYSQL_USER=matomo
+      - MYSQL_PASSWORD=your-mysql-password
+  matomo:
+    image: matomo
+    container_name: matomo
+    restart: always
+    networks:
+      - database
+      - traefik_proxy
+    environment:
+      - MATOMO_DATABASE_HOST=db
+      - MATOMO_DATABASE_USERNAME=matomo
+      - MATOMO_DATABASE_PASSWORD=your-mysql-password
+      - MATOMO_DATABASE_DBNAME=matomo
+      - PHP_MEMORY_LIMIT=512M
+    volumes:
+      - matomo:/var/www/html
+    labels:
+      # Enable traefik
+      - "traefik.enable=true"
+      # Router for Matomo application, only available over HTTPS
+      - "traefik.http.routers.matomo-secure.rule=Host(`your.domain`)"
+      - "traefik.http.routers.matomo-secure.tls=true"
+      - "traefik.http.routers.matomo-secure.middlewares=remove-xpowered"
+      - "traefik.http.routers.matomo-secure.tls.certresolver=http"
+      # Service details
+      - "traefik.http.services.matomo.loadbalancer.server.port=80"
+      - "traefik.docker.network=traefik_proxy"
+networks:
+  database:
+  traefik_proxy:
+    external: true
